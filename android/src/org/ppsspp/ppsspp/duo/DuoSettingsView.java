@@ -1,6 +1,8 @@
 package org.ppsspp.ppsspp.duo;
 
 import android.content.Context;
+import android.app.Activity;
+import androidx.appcompat.app.AlertDialog;
 import android.content.pm.PackageInfo;
 import android.graphics.Typeface;
 import android.hardware.display.DisplayManager;
@@ -54,6 +56,23 @@ final class DuoSettingsView extends ScrollView {
 		Context ctx = getContext();
 
 		header(ctx.getString(R.string.duo_settings_general));
+		android.content.SharedPreferences modePrefs = ctx.getSharedPreferences("PPSSPPDuo", Context.MODE_PRIVATE);
+		toggle("Single-screen mode (restart required)", modePrefs.getBoolean("singleScreenMode", false), value -> {
+			modePrefs.edit()
+				.putBoolean("singleScreenMode", value)
+				.putBoolean("singleScreenModeConfigured", true)
+				.apply();
+			new AlertDialog.Builder(ctx)
+				.setTitle("PPSSPP Duo")
+				.setMessage("Restart PPSSPP to apply the display mode change.")
+				.setPositiveButton("Restart now", (dialog, which) -> {
+					if (ctx instanceof Activity) {
+						((Activity) ctx).recreate();
+					}
+				})
+				.setNegativeButton("Later", null)
+				.show();
+		});
 		toggle(ctx.getString(R.string.duo_setting_remember_per_game), settings.getRememberPerGame(), settings::setRememberPerGame);
 		toggle(ctx.getString(R.string.duo_setting_haptics), settings.getHaptics(), settings::setHaptics);
 		toggle(ctx.getString(R.string.duo_setting_immersive) + "\n" + ctx.getString(R.string.duo_setting_immersive_desc), settings.getImmersive(), value -> {
