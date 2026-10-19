@@ -746,14 +746,14 @@ public class PpssppActivity extends AppCompatActivity implements SensorEventList
 			// }
 
 			mGLSurfaceView.setRenderer(nativeRenderer);
-			setContentView(mGLSurfaceView);
+			setContentView(duoManager != null ? duoManager.createSingleScreenLayout(mGLSurfaceView) : mGLSurfaceView);
 		} else {
 			updateSystemUiVisibility();
 
 			mSurfaceView = new NativeSurfaceView(this);
 			sizeManager.setSurfaceView(mSurfaceView);
 			setInsetsListener(mSurfaceView);
-			setContentView(mSurfaceView);
+			setContentView(duoManager != null ? duoManager.createSingleScreenLayout(mSurfaceView) : mSurfaceView);
 
 			// render loop thread will be started once we get a surface.
 		}
