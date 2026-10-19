@@ -7,12 +7,9 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 /**
- * Vertical layout for the emulator surface and embedded Duo panel.
+ * Vertical layout for the emulator surface and the embedded Duo panel.
  *
- * This helper is intentionally not wired into PpssppActivity yet: the Duo UI is currently
- * owned by DuoPresentation (a separate-display window), so the real integration must first
- * separate its content view from that window lifecycle. Keeping this scaffold isolated lets
- * us test the layout strategy without changing the default emulator rendering path.
+ * The original external-display presentation remains in use when single-screen mode is disabled.
  */
 public final class SingleScreenPortraitLayout {
     private SingleScreenPortraitLayout() {}
