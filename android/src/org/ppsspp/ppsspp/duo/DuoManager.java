@@ -21,7 +21,7 @@ import java.util.Set;
 //
 // The Presentation is shown between onStart and onStop. It survives onPause, so a dialog or a
 // permission prompt on the main screen doesn't blank the second one.
-public final class DuoManager implements DisplayManager.DisplayListener, DuoPresentation.Listener {
+public final class DuoManager implements DisplayManager.DisplayListener, DuoPresentation.Listener, DuoPanelView.Listener {
 	private static final String TAG = "PPSSPPDuo";
 	// Display events come in bursts (added, then changed a few times while the panel powers up).
 	private static final long REFRESH_DEBOUNCE_MS = 300;
