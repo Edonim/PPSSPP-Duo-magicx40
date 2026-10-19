@@ -446,7 +446,7 @@ final class DuoPanelView extends FrameLayout implements DuoModContext {
 		settingsOpen = true;
 		tabBarWanted = true;
 		applyTabBarVisibility();
-		settingsView = new DuoSettingsView(getContext(), settings, mods, getDisplay(), new DuoSettingsView.Callback() {
+		settingsView = new DuoSettingsView(getContext(), settings, mods, hostDisplay, new DuoSettingsView.Callback() {
 			@Override
 			public void onDisplayConfigChanged() {
 				listener.onDisplayConfigChanged();
