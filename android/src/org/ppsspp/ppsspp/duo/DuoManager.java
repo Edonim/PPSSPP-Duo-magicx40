@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.view.View;
 
 import org.ppsspp.ppsspp.NativeApp;
 
@@ -29,6 +30,8 @@ public final class DuoManager implements DisplayManager.DisplayListener, DuoPres
 	private final DisplayManager displayManager;
 	private final DuoSettings settings;
 	private final List<DuoMod> mods;
+	private final boolean singleScreenMode;
+	private DuoPanelView embeddedPanel;
 	private final Handler handler = new Handler(Looper.getMainLooper());
 
 	// Displays that threw on show(). Cleared when displays are added or removed.
@@ -43,10 +46,33 @@ public final class DuoManager implements DisplayManager.DisplayListener, DuoPres
 		this.displayManager = (DisplayManager)activity.getSystemService(Context.DISPLAY_SERVICE);
 		this.settings = new DuoSettings(activity);
 		this.mods = DuoModRegistry.createAll();
+		this.singleScreenMode = activity.getSharedPreferences("PPSSPPDuo", Context.MODE_PRIVATE)
+			.getBoolean("singleScreenMode", false);
+	}
+
+	public boolean isSingleScreenMode() {
+		return singleScreenMode;
+	}
+
+	// Wrap the emulator surface only when the opt-in single-screen mode is enabled.
+	public View createSingleScreenLayout(View gameSurface) {
+		if (!singleScreenMode) {
+			return gameSurface;
+		}
+		if (embeddedPanel == null) {
+			WindowManager wm = activity.getWindowManager();
+			Display display = wm != null ? wm.getDefaultDisplay() : null;
+			embeddedPanel = new DuoPanelView(activity, display, activity.getWindow(), settings, mods, this);
+		}
+		return SingleScreenPortraitLayout.create(activity, gameSurface, embeddedPanel);
 	}
 
 	public void onStart() {
 		started = true;
+		if (singleScreenMode) {
+			if (embeddedPanel != null) embeddedPanel.startPanel();
+			return;
+		}
 		if (displayManager != null) {
 			displayManager.registerDisplayListener(this, handler);
 		}
@@ -55,6 +81,10 @@ public final class DuoManager implements DisplayManager.DisplayListener, DuoPres
 
 	public void onStop() {
 		started = false;
+		if (singleScreenMode) {
+			if (embeddedPanel != null) embeddedPanel.stopPanel();
+			return;
+		}
 		if (displayManager != null) {
 			displayManager.unregisterDisplayListener(this);
 		}
@@ -64,6 +94,10 @@ public final class DuoManager implements DisplayManager.DisplayListener, DuoPres
 
 	public void onPause() {
 		paused = true;
+		if (singleScreenMode) {
+			if (embeddedPanel != null) embeddedPanel.onHostPause();
+			return;
+		}
 		if (presentation != null) {
 			presentation.onHostPause();
 		}
@@ -71,6 +105,10 @@ public final class DuoManager implements DisplayManager.DisplayListener, DuoPres
 
 	public void onResume() {
 		paused = false;
+		if (singleScreenMode) {
+			if (embeddedPanel != null) embeddedPanel.onHostResume();
+			return;
+		}
 		if (presentation != null) {
 			presentation.onHostResume();
 		}
@@ -82,11 +120,14 @@ public final class DuoManager implements DisplayManager.DisplayListener, DuoPres
 
 	// g_Config.bDualScreen changed (System settings).
 	public void onConfigChanged() {
+		if (singleScreenMode) return;
 		scheduleRefresh(0);
 	}
 
 	@Override
 	public void onDisplayConfigChanged() {
+		// The embedded panel shares the host display; changing the preferred external display is irrelevant.
+		if (singleScreenMode) return;
 		// Called from inside the presentation; don't dismiss it in the middle of a click handler.
 		scheduleRefresh(0);
 	}
