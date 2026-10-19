@@ -837,7 +837,39 @@ public class PpssppActivity extends AppCompatActivity implements SensorEventList
 				}
 			};
 
+		maybePromptSingleScreenMode();
+
 		Log.i(TAG, "onCreate end");
+	}
+
+	/**
+	 * Offer the fork-specific layout choice once, without changing the upstream default behavior.
+	 * The mode is read by DuoManager during Activity creation, so enabling it requires recreation.
+	 */
+	private void maybePromptSingleScreenMode() {
+		android.content.SharedPreferences prefs = getSharedPreferences("PPSSPPDuo", Context.MODE_PRIVATE);
+		if (prefs.getBoolean("singleScreenModeConfigured", false)) {
+			return;
+		}
+
+		new AlertDialog.Builder(this)
+			.setTitle("PPSSPP Duo — display mode")
+			.setMessage("Choose how to display Duo. Single-screen mode puts the game above the Duo panel on one portrait screen. Normal mode keeps the original second-screen behavior. You can change this choice later in Duo settings.")
+			.setPositiveButton("Single-screen mode", (dialog, which) -> {
+				prefs.edit()
+					.putBoolean("singleScreenMode", true)
+					.putBoolean("singleScreenModeConfigured", true)
+					.apply();
+				recreate();
+			})
+			.setNegativeButton("Normal mode", (dialog, which) -> prefs.edit()
+				.putBoolean("singleScreenMode", false)
+				.putBoolean("singleScreenModeConfigured", true)
+				.apply())
+			.setOnCancelListener(dialog -> {
+				// Keep the choice unconfigured so the user can decide on the next launch.
+			})
+			.show();
 	}
 
 	@Override
