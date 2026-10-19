@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-
 /**
  * Vertical layout for the emulator surface and embedded Duo panel.
  *
@@ -19,7 +18,7 @@ public final class SingleScreenPortraitLayout {
     private SingleScreenPortraitLayout() {}
 
     /**
-     * Builds a portrait column with the emulator surface above a placeholder Duo panel.
+     * Builds a portrait column with the game surface above the real Duo panel.
      * The game surface keeps a larger share of the available height.
      */
     public static View create(Context context, View gameSurface, View duoPanel) {
